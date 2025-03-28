@@ -1,24 +1,57 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
+const fakeFileSystem = {
+  root: {
+    "secret.txt": "Confidential Data: TOP SECRET 🚨",
+    "logs.txt": "Server logs - No anomalies detected...",
+    system: {
+      "passwords.txt": "root: P@ssw0rd123",
+      "config.cfg": "System Configuration File",
+    },
+  },
+};
+
 const Terminal = () => {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([]);
+  const [currentPath, setCurrentPath] = useState(["root"]); // Tracks current folder
+
+  const getCurrentFolder = () => {
+    return currentPath.reduce((acc, folder) => acc[folder], fakeFileSystem);
+  };
 
   const handleCommand = (command) => {
     let output = "";
+    const args = command.split(" ");
+    const cmd = args[0];
 
-    if (command === "help") {
-      output = "Available commands: help, clear, hack, exit";
-    } else if (command === "clear") {
+    if (cmd === "help") {
+      output = "Available commands: help, clear, ls, cd <folder>, cat <file>";
+    } else if (cmd === "clear") {
       setHistory([]);
       return;
-    } else if (command === "hack") {
-      output = "⚠️ Hacking in progress... [ACCESS DENIED]";
-    } else if (command === "exit") {
-      output = "Exiting system... Goodbye!";
+    } else if (cmd === "ls") {
+      const folder = getCurrentFolder();
+      output = Object.keys(folder).join("\n");
+    } else if (cmd === "cd") {
+      const folderName = args[1];
+      if (folderName && getCurrentFolder()[folderName]) {
+        setCurrentPath([...currentPath, folderName]);
+        output = `📂 Moved to /${currentPath.join("/")}/${folderName}`;
+      } else {
+        output = "❌ Folder not found!";
+      }
+    } else if (cmd === "cat") {
+      const fileName = args[1];
+      const folder = getCurrentFolder();
+      if (folder[fileName]) {
+        output = folder[fileName];
+      } else {
+        output = "❌ File not found!";
+      }
     } else {
-      output = `Unknown command: ${command}`;
+      output = `Unknown command: ${cmd}`;
     }
 
     setHistory([...history, { command, output }]);
@@ -53,7 +86,6 @@ const Terminal = () => {
           </motion.div>
         ))}
 
-        {/* Input Field */}
         <form onSubmit={handleSubmit} className="flex mt-2">
           <span className="mr-2">> </span>
           <input
