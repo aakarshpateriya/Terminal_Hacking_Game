@@ -1,25 +1,29 @@
 export const missions = [
     {
       id: 1,
-      name: "Hack into Bank Server",
-      description: "Access the bank logs and extract account details.",
+      name: "Bank Heist",
+      description: "Hack into a bank database to retrieve client data.",
+      objective: "Find and decrypt account credentials.",
       targetSystem: {
-        "logs.txt": "Transaction History: ***Confidential***",
-        "credentials.txt": "Admin Password: Bank@1234",
+        "credentials.txt": "Encrypted Data",
+        "logs.txt": "Access Logs",
       },
-      objective: "Find the admin password inside 'credentials.txt'",
-      reward: "5000 Crypto Coins",
+      hasFirewall: true,
+      requiresPassword: false,  // 🚀 No password needed for this one
     },
     {
       id: 2,
-      name: "Bypass Government Firewall",
-      description: "Extract classified data from a government database.",
+      name: "Government Database",
+      description: "Access confidential records.",
+      objective: "Extract classified files.",
       targetSystem: {
-        "classified.txt": "TOP SECRET: [REDACTED]",
-        "firewall.cfg": "Firewall Rules - Protected",
+        "records.txt": "Classified Documents",
+        "logs.txt": "Restricted Logs",
       },
-      objective: "Access the 'classified.txt' file",
-      reward: "8000 Crypto Coins",
-    },
+      hasFirewall: false,
+      requiresPassword: true,  // 🔐 This one requires a password!
+      possiblePasswords: ["alpha123", "securepass", "root42", "hackerman", "shadow"], // Random passwords
+      correctPassword: "root42", // Only one is correct
+    }
   ];
   
