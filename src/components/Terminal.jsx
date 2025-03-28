@@ -1,25 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-
-const fakeFileSystem = {
-  root: {
-    "secret.txt": "Confidential Data: TOP SECRET 🚨",
-    "logs.txt": "Server logs - No anomalies detected...",
-    system: {
-      "passwords.txt": "root: P@ssw0rd123",
-      "config.cfg": "System Configuration File",
-    },
-  },
-};
+import { missions } from "../data/missions";
+import PasswordCracker from "./PasswordCracker";
 
 const Terminal = () => {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([]);
-  const [currentPath, setCurrentPath] = useState(["root"]); // Tracks current folder
-
-  const getCurrentFolder = () => {
-    return currentPath.reduce((acc, folder) => acc[folder], fakeFileSystem);
-  };
+  const [currentMission, setCurrentMission] = useState(null);
+  const [targetSystem, setTargetSystem] = useState({});
+  const [crackingPassword, setCrackingPassword] = useState(null);
 
   const handleCommand = (command) => {
     let output = "";
@@ -27,26 +16,37 @@ const Terminal = () => {
     const cmd = args[0];
 
     if (cmd === "help") {
-      output = "Available commands: help, clear, ls, cd <folder>, cat <file>";
+      output = "Available commands: help, clear, ls, cat <file>, hack <mission_id>";
     } else if (cmd === "clear") {
       setHistory([]);
       return;
-    } else if (cmd === "ls") {
-      const folder = getCurrentFolder();
-      output = Object.keys(folder).join("\n");
-    } else if (cmd === "cd") {
-      const folderName = args[1];
-      if (folderName && getCurrentFolder()[folderName]) {
-        setCurrentPath([...currentPath, folderName]);
-        output = `📂 Moved to /${currentPath.join("/")}/${folderName}`;
+    } else if (cmd === "missions") {
+      output = missions
+        .map((m) => `🔹 ${m.id}: ${m.name} - ${m.description}`)
+        .join("\n");
+    } else if (cmd === "hack") {
+      const missionId = parseInt(args[1]);
+      const mission = missions.find((m) => m.id === missionId);
+
+      if (mission) {
+        setCurrentMission(mission);
+        setTargetSystem(mission.targetSystem);
+        output = `🚀 Starting mission: ${mission.name}\n🎯 Objective: ${mission.objective}`;
       } else {
-        output = "❌ Folder not found!";
+        output = "❌ Mission not found!";
       }
+    } else if (cmd === "ls") {
+      output = Object.keys(targetSystem).length > 0 ? Object.keys(targetSystem).join("\n") : "📂 No active mission";
     } else if (cmd === "cat") {
       const fileName = args[1];
-      const folder = getCurrentFolder();
-      if (folder[fileName]) {
-        output = folder[fileName];
+
+      if (targetSystem[fileName]) {
+        if (fileName === "credentials.txt") {
+          setCrackingPassword("Bank@1234"); // Example for Mission 1
+          output = "🔓 Cracking password...";
+        } else {
+          output = targetSystem[fileName];
+        }
       } else {
         output = "❌ File not found!";
       }
@@ -86,6 +86,16 @@ const Terminal = () => {
           </motion.div>
         ))}
 
+        {crackingPassword && (
+          <PasswordCracker
+            password={crackingPassword}
+            onSuccess={() => {
+              setHistory([...history, { command: "cat credentials.txt", output: targetSystem["credentials.txt"] }]);
+              setCrackingPassword(null);
+            }}
+          />
+        )}
+
         <form onSubmit={handleSubmit} className="flex mt-2">
           <span className="mr-2">> </span>
           <input
@@ -102,3 +112,4 @@ const Terminal = () => {
 };
 
 export default Terminal;
+
