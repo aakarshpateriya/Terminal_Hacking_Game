@@ -13,7 +13,7 @@ function App() {
   useEffect(() => {
     // Initialize socket connection
     if (!socket) {
-      socket = io("http://localhost:5000", {
+      socket = io("https://terminal-hacking-game.onrender.com", {
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         transports: ['websocket', 'polling'] // Try WebSocket first, then polling
